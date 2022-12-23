@@ -38,7 +38,7 @@ export class Engine extends EventEmitter {
     private readonly loader: LoaderInterface;
     private readonly segmentManager: SegmentManager;
 
-    private latestLoaderImpl: LoaderImplInterface | undefined;
+    private currentLoaders: LoaderImplInterface[] = []
 
     public constructor(settings: Partial<HlsJsEngineSettings> = {}) {
         super();
@@ -61,7 +61,6 @@ export class Engine extends EventEmitter {
 
             constructor() {
                 this.impl = new HlsJsLoader(engine.segmentManager);
-                engine.setLatestLoaderImpl(this);
 
                 this.stats = this.impl.stats;
             }
@@ -71,6 +70,10 @@ export class Engine extends EventEmitter {
                 config: LoaderConfiguration,
                 callbacks: LoaderCallbacks<LoaderContext>
             ) => {
+                if (context.url.endsWith('.m3u8') !== true) {
+                    engine.addLoaderImpl(this);
+                }
+
                 this.context = context;
                 this.callbacks = callbacks;
                 await this.impl.load(context, config, callbacks);
@@ -86,6 +89,8 @@ export class Engine extends EventEmitter {
                 if (this.context) {
                     this.impl.abort(this.context);
                 }
+
+                engine.removeLoaderImpl(this);
             };
 
             getResponseHeader = () => undefined;
@@ -99,14 +104,17 @@ export class Engine extends EventEmitter {
     }
 
     public async destroy(): Promise<void> {
+        this.currentLoaders = [];
+
         await this.segmentManager.destroy();
     }
 
     public abortCurrentRequest (): void {
-        if (this.latestLoaderImpl) {
-            this.latestLoaderImpl.abort();
-            this.latestLoaderImpl = undefined;
+        for (const loader of this.currentLoaders) {
+            loader.abort();
         }
+
+        this.currentLoaders = [];
     }
 
     public getSettings(): {
@@ -133,8 +141,12 @@ export class Engine extends EventEmitter {
         this.segmentManager.setPlayingSegmentByCurrentTime(playheadPosition);
     }
 
-    private setLatestLoaderImpl (loader: LoaderImplInterface): void {
-        this.latestLoaderImpl = loader;
+    private addLoaderImpl (loader: LoaderImplInterface): void {
+        this.currentLoaders.push(loader);
+    }
+
+    private removeLoaderImpl (loader: LoaderImplInterface): void {
+        this.currentLoaders = this.currentLoaders.filter(l => l !== loader);
     }
 }
 
