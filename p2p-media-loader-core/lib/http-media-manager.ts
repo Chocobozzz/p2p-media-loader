@@ -56,7 +56,7 @@ export class HttpMediaManager extends FilteredEmitter {
             ? segment.url
             : this.buildSegmentUrl(segment);
 
-        this.debug("http segment download", segmentUrl);
+        this.debug("http segment download", segmentUrl, segment.id);
 
         segment.requestUrl = segmentUrl;
 

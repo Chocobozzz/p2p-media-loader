@@ -52,6 +52,8 @@ export class Engine extends EventEmitter {
     }
 
     public createLoaderClass(): new () => unknown {
+        this.abortCurrentRequest()
+
         const engine = this; // eslint-disable-line @typescript-eslint/no-this-alias
         const loader = class implements LoaderImplInterface {
             private impl: HlsJsLoader;

@@ -128,7 +128,7 @@ export class HlsJsLoader {
     }
 
     public abort(context: LoaderContext, callbacks?: LoaderCallbacks<LoaderContext>): void {
-        if (this.stats.loaded || this.stats.aborted) return;
+        if (this.stats.loading.end || this.stats.aborted) return;
 
         this.debug(`Aborting by hls.js fragment ${this.debugId} loading.`);
 
