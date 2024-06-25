@@ -1,7 +1,7 @@
 {
   "name": "@peertube/p2p-media-loader-core",
   "description": "P2P Media Loader core - PeerTube fork",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "private": false,
   "license": "Apache-2.0",
   "author": "Chocobozzz",
@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "tsc": "tsc",
-    "build": "rm -rf dist && mkdir dist && tsc --noEmit && esbuild lib/index.ts --bundle --format=esm --outfile=dist/index.js",
+    "build": "rm -rf dist && mkdir dist && tsc --emitDeclarationOnly && esbuild lib/index.ts --bundle --format=esm --outfile=dist/index.js",
     "lint": "eslint . --ext .ts",
     "test": "TS_NODE_PROJECT=tsconfig.test.json TS_NODE_CACHE=false mocha -r ts-node/register test/*.test.ts"
   },
