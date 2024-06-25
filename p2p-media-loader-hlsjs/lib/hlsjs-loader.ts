@@ -16,8 +16,8 @@
 
 import Debug from "debug";
 import { Events, LoaderInterface, Segment } from "@peertube/p2p-media-loader-core";
-import { byteRangeToString, getByteRange } from "./byte-range";
-import { SegmentManager } from "./segment-manager";
+import { byteRangeToString, getByteRange } from "./byte-range.js";
+import { SegmentManager } from "./segment-manager.js";
 import type { LoaderCallbacks, LoaderConfiguration, LoaderContext, LoaderStats } from "hls.js";
 
 interface LoadError {

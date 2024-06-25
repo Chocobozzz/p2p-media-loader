@@ -16,9 +16,9 @@
 
 import Debug from "debug";
 
-import { STEEmitter } from "./stringly-typed-event-emitter";
-import { Segment } from "./loader-interface";
-import { SegmentValidatorCallback, XhrSetupCallback, SegmentUrlBuilder } from "./hybrid-loader";
+import { STEEmitter } from "./stringly-typed-event-emitter.js";
+import { Segment } from "./loader-interface.js";
+import { SegmentValidatorCallback, XhrSetupCallback, SegmentUrlBuilder } from "./hybrid-loader.js";
 
 class FilteredEmitter extends STEEmitter<
     "segment-start-load" | "segment-loaded" | "segment-error" | "segment-size" | "bytes-downloaded"

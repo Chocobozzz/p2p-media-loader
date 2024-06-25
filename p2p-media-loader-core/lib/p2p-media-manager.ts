@@ -19,15 +19,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import Debug from "debug";
-import Client from "bittorrent-tracker/client";
+import Client from "bittorrent-tracker";
 import { Buffer } from "buffer";
 import sha1 from "sha.js/sha1";
 
-import { STEEmitter } from "./stringly-typed-event-emitter";
-import { Segment } from "./loader-interface";
-import { MediaPeer, MediaPeerSegmentStatus } from "./media-peer";
-import { version } from "./index";
-import { SegmentsStorage, SegmentValidatorCallback } from "./hybrid-loader";
+import { STEEmitter } from "./stringly-typed-event-emitter.js";
+import { Segment } from "./loader-interface.js";
+import { MediaPeer, MediaPeerSegmentStatus } from "./media-peer.js";
+import { version } from "./index.js";
+import { SegmentsStorage, SegmentValidatorCallback } from "./hybrid-loader.js";
 
 const PEER_PROTOCOL_VERSION = 2;
 const PEER_ID_VERSION_STRING = version.replace(/\d*./g, (v) => `0${parseInt(v, 10) % 100}`.slice(-2)).slice(0, 4);

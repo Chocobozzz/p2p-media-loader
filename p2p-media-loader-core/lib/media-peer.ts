@@ -21,7 +21,7 @@
 import Debug from "debug";
 import { Buffer } from "buffer";
 
-import { STEEmitter } from "./stringly-typed-event-emitter";
+import { STEEmitter } from "./stringly-typed-event-emitter.js";
 
 enum MediaPeerCommands {
     SegmentData,

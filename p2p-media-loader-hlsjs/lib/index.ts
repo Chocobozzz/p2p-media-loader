@@ -18,11 +18,11 @@
 /* eslint-disable */
 
 export const version = "0.6.2";
-export * from "./engine";
-export * from "./segment-manager";
+export * from "./engine.js";
+export * from "./segment-manager.js";
 
 import Debug from 'debug';
-import { Engine } from "./engine";
+import { Engine } from "./engine.js";
 
 const debug = Debug("p2pml:hlsjs-init");
 

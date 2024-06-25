@@ -8,6 +8,7 @@
   "homepage": "https://github.com/Chocobozzz/p2p-media-loader",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "tsc": "tsc",
     "build": "npm run tsc",

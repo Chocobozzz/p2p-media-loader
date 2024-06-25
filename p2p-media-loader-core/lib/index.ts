@@ -16,8 +16,8 @@
  */
 
 export const version = "0.6.2";
-export * from "./loader-interface";
-export * from "./hybrid-loader";
+export * from "./loader-interface.js";
+export * from "./hybrid-loader.js";
 
 declare global {
     interface Window {

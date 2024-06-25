@@ -16,10 +16,10 @@
 
 import { EventEmitter } from "events";
 import { Events, LoaderInterface, HybridLoader, HybridLoaderSettings } from "@peertube/p2p-media-loader-core";
-import { SegmentManager, SegmentManagerSettings } from "./segment-manager";
-import { HlsJsLoader } from "./hlsjs-loader";
+import { SegmentManager, SegmentManagerSettings } from "./segment-manager.js";
+import { HlsJsLoader } from "./hlsjs-loader.js";
 import type { LoaderCallbacks, LoaderConfiguration, LoaderContext, LoaderStats } from "hls.js";
-import { ByteRange } from "./byte-range";
+import { ByteRange } from "./byte-range.js";
 
 export interface HlsJsEngineSettings {
     loader: Partial<HybridLoaderSettings>;

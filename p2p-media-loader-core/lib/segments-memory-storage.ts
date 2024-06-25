@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Segment } from "./loader-interface";
-import { SegmentsStorage } from "./hybrid-loader";
+import { Segment } from "./loader-interface.js";
+import { SegmentsStorage } from "./hybrid-loader.js";
 
 export class SegmentsMemoryStorage implements SegmentsStorage {
     private cache = new Map<string, { segment: Segment; lastAccessed: number }>();

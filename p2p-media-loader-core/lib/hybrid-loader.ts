@@ -18,12 +18,12 @@ import Debug from "debug";
 import { EventEmitter } from "events";
 import Peer from "simple-peer";
 
-import { LoaderInterface, Events, Segment } from "./loader-interface";
-import { HttpMediaManager } from "./http-media-manager";
-import { P2PMediaManager } from "./p2p-media-manager";
-import { MediaPeerSegmentStatus } from "./media-peer";
-import { BandwidthApproximator } from "./bandwidth-approximator";
-import { SegmentsMemoryStorage } from "./segments-memory-storage";
+import { LoaderInterface, Events, Segment } from "./loader-interface.js";
+import { HttpMediaManager } from "./http-media-manager.js";
+import { P2PMediaManager } from "./p2p-media-manager.js";
+import { MediaPeerSegmentStatus } from "./media-peer.js";
+import { BandwidthApproximator } from "./bandwidth-approximator.js";
+import { SegmentsMemoryStorage } from "./segments-memory-storage.js";
 
 const defaultSettings: HybridLoaderSettings = {
     cachedSegmentExpiration: 5 * 60 * 1000,

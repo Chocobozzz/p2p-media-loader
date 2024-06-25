@@ -17,8 +17,8 @@
 import Debug from "debug";
 import { Events, Segment, LoaderInterface, XhrSetupCallback } from "@peertube/p2p-media-loader-core";
 import { Manifest, Parser } from "m3u8-parser";
-import { ByteRange, byteRangeToString, compareByteRanges } from "./byte-range";
-import { AssetsStorage } from "./engine";
+import { ByteRange, byteRangeToString, compareByteRanges } from "./byte-range.js";
+import { AssetsStorage } from "./engine.js";
 
 const defaultSettings: SegmentManagerSettings = {
     forwardSegmentCount: 20,

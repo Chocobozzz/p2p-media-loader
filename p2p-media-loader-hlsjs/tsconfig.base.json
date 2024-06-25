@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "NodeNext",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-declare module "bittorrent-tracker/client";
+declare module "bittorrent-tracker";
 declare module "simple-peer";
 declare module "sha.js/sha1" {
     import { HashStatic } from "sha.js";
