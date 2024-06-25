@@ -26,9 +26,9 @@ import sha1 from "sha.js/sha1";
 import { STEEmitter } from "./stringly-typed-event-emitter.js";
 import { Segment } from "./loader-interface.js";
 import { MediaPeer, MediaPeerSegmentStatus } from "./media-peer.js";
-import { version } from "./index.js";
 import { SegmentsStorage, SegmentValidatorCallback } from "./hybrid-loader.js";
 
+const version = "0.6.2";
 const PEER_PROTOCOL_VERSION = 2;
 const PEER_ID_VERSION_STRING = version.replace(/\d*./g, (v) => `0${parseInt(v, 10) % 100}`.slice(-2)).slice(0, 4);
 const PEER_ID_VERSION_PREFIX = `-WW${PEER_ID_VERSION_STRING}-`; // Using WebTorrent client ID in order to not be banned by websocket trackers

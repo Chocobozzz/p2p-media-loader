@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-export const version = "0.6.2";
 export * from "./loader-interface.js";
 export * from "./hybrid-loader.js";
 
