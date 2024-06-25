@@ -202,7 +202,7 @@ export class HlsJsLoader {
     ): void {
         this.cleanup();
 
-        callbacks.onError(error, context, undefined);
+        callbacks.onError(error, context, undefined, this.stats);
     }
 
     private cleanup () {

@@ -1,7 +1,4 @@
 .*
 tsconfig.*
 lib
-test
-demo
-webpackfile.js
 *.tgz

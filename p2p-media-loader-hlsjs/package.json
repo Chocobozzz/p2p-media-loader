@@ -9,12 +9,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "compile": "tsc",
-    "browserify": "mkdirp ./build && browserify -r ./dist/index.js:p2p-media-loader-hlsjs ./dist/browser-init.js -x p2p-media-loader-core -x debug -x events -x buffer > ./build/p2p-media-loader-hlsjs.js",
-    "minify": "terser ./build/p2p-media-loader-hlsjs.js -m -c > ./build/p2p-media-loader-hlsjs.min.js",
-    "webpack:build": "webpack --progress -c webpackfile.js",
-    "webpack:watch": "webpack --watch --progress -c webpackfile.js",
-    "build": "npm run compile && npm run browserify && npm run minify",
+    "tsc": "tsc",
+    "build": "npm run tsc",
     "lint": "eslint . --ext .ts",
     "test": "TS_NODE_PROJECT=tsconfig.test.json TS_NODE_CACHE=false mocha -r ts-node/register test/*.test.ts"
   },
@@ -24,32 +20,20 @@
   },
   "dependencies": {
     "@peertube/p2p-media-loader-core": "^1.0.15",
-    "debug": "^4.3.4",
+    "debug": "^4.3.5",
     "events": "^3.3.0",
-    "m3u8-parser": "^4.7.1"
+    "m3u8-parser": "^7.1.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.7",
-    "@types/events": "^3.0.0",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.3",
-    "@types/sinon": "^10.0.12",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
-    "@typescript-eslint/parser": "^5.30.5",
-    "browserify": "^17.0.0",
-    "eslint": "^8.19.0",
-    "eslint-config-prettier": "^8.5.0",
-    "hls.js": "^1.1.5",
-    "mkdirp": "^1.0.4",
-    "mocha": "^10.0.0",
-    "prettier": "^2.7.1",
-    "sinon": "^14.0.0",
-    "terser": "^5.14.1",
-    "ts-loader": "^9.3.1",
-    "ts-mockito": "^2.6.1",
-    "ts-node": "^10.8.2",
-    "typescript": "^4.7.4",
-    "webpack": "^5.73.0",
-    "webpack-cli": "^4.10.0"
+    "@types/debug": "^4.1.12",
+    "@types/events": "^3.0.3",
+    "@types/node": "^20.14.8",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.14.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "hls.js": "^1.5.11",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.2"
   }
 }
