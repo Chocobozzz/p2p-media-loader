@@ -1,7 +1,7 @@
 {
   "name": "@peertube/p2p-media-loader-core",
   "description": "P2P Media Loader core - PeerTube fork",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "private": false,
   "license": "Apache-2.0",
   "author": "Chocobozzz",
