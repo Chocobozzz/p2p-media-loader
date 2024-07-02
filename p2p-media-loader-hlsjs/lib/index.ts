@@ -26,106 +26,29 @@ import { Engine } from "./engine.js";
 
 const debug = Debug("p2pml:hlsjs-init");
 
-declare const videojs: any;
-
 declare global {
     interface Window {
         p2pml: Record<string, unknown>;
     }
 }
-
-export function initHlsJsPlayer(player: any): void {
-    if (player && player.config && player.config.loader && typeof player.config.loader.getEngine === "function") {
-        initHlsJsEvents(player, player.config.loader.getEngine());
+export function initHlsJsPlayer(videojsPlayer: any, hlsjs: any): void {
+    if (hlsjs && hlsjs.config && hlsjs.config.loader && typeof hlsjs.config.loader.getEngine === "function") {
+        initHlsJsEvents(videojsPlayer, hlsjs, hlsjs.config.loader.getEngine());
     }
 }
 
-export function initClapprPlayer(player: any): void {
-    player.on("play", () => {
-        const playback = player.core.getCurrentPlayback();
-        if (playback._hls && !playback._hls._p2pm_linitialized) {
-            playback._hls._p2pm_linitialized = true;
-            initHlsJsPlayer(player.core.getCurrentPlayback()._hls);
-        }
-    });
-}
+function initHlsJsEvents(player: any, hlsjs: any, engine: Engine): void {
+    const onSeek = function () {
+        debug("Player seeking.")
 
-export function initFlowplayerHlsJsPlayer(player: any): void {
-    player.on("ready", () => initHlsJsPlayer(player.engine.hlsjs ?? player.engine.hls));
-}
-
-export function initVideoJsContribHlsJsPlayer(player: any): void {
-    player.ready(() => {
-        const options = player.tech_.options_;
-        if (
-            options &&
-            options.hlsjsConfig &&
-            options.hlsjsConfig.loader &&
-            typeof options.hlsjsConfig.loader.getEngine === "function"
-        ) {
-            initHlsJsEvents(player.tech_, options.hlsjsConfig.loader.getEngine());
-        }
-    });
-}
-
-export function initVideoJsHlsJsPlugin(): void {
-    if (videojs == undefined || videojs.Html5Hlsjs == undefined) {
-        return;
+        // Abort current HTTP/P2P request so HLS is not stuck with a P2P request when moving current video player time
+        // to a previously loaded fragment
+        engine.abortCurrentRequest();
     }
 
-    videojs.Html5Hlsjs.addHook("beforeinitialize", (videojsPlayer: any, hlsjs: any) => {
-        if (hlsjs.config && hlsjs.config.loader && typeof hlsjs.config.loader.getEngine === "function") {
-            initHlsJsEvents(hlsjs, hlsjs.config.loader.getEngine());
-        }
-    });
-}
+    player.on('seeking', onSeek)
 
-export function initMediaElementJsPlayer(mediaElement: any): void {
-    mediaElement.addEventListener("hlsFragChanged", (event: any) => {
-        const hls = mediaElement.hlsPlayer;
-        if (hls && hls.config && hls.config.loader && typeof hls.config.loader.getEngine === "function") {
-            const engine: Engine = hls.config.loader.getEngine();
-
-            if (event.data && event.data.length > 1) {
-                const frag = event.data[1].frag;
-                const byteRange =
-                    frag.byteRange.length !== 2
-                        ? undefined
-                        : { offset: frag.byteRange[0], length: frag.byteRange[1] - frag.byteRange[0] };
-                engine.setPlayingSegment(frag.url, byteRange, frag.start, frag.duration);
-            }
-        }
-    });
-    mediaElement.addEventListener("hlsDestroying", async () => {
-        const hls = mediaElement.hlsPlayer;
-        if (hls && hls.config && hls.config.loader && typeof hls.config.loader.getEngine === "function") {
-            const engine: Engine = hls.config.loader.getEngine();
-            await engine.destroy();
-        }
-    });
-    mediaElement.addEventListener("hlsError", (event: any) => {
-        const hls = mediaElement.hlsPlayer;
-        if (hls && hls.config && hls.config.loader && typeof hls.config.loader.getEngine === "function") {
-            if (event.data !== undefined && event.data.details === "bufferStalledError") {
-                const engine: Engine = hls.config.loader.getEngine();
-                engine.setPlayingSegmentByCurrentTime(hls.media.currentTime);
-            }
-        }
-    });
-}
-
-export function initJwPlayer(player: any, hlsjsConfig: any): void {
-    const iid = setInterval(() => {
-        if (player.hls && player.hls.config) {
-            clearInterval(iid);
-            Object.assign(player.hls.config, hlsjsConfig);
-            initHlsJsPlayer(player.hls);
-        }
-    }, 200);
-}
-
-function initHlsJsEvents(player: any, engine: Engine): void {
-    player.on("hlsFragChanged", (_event: string, data: any) => {
+    hlsjs.on("hlsFragChanged", (_event: string, data: any) => {
         debug("HLS Frag changed.", data)
 
         const frag = data.frag;
@@ -135,10 +58,8 @@ function initHlsJsEvents(player: any, engine: Engine): void {
                 : { offset: frag.byteRange[0], length: frag.byteRange[1] - frag.byteRange[0] };
         engine.setPlayingSegment(frag.url, byteRange, frag.start, frag.duration);
     });
-    player.on("hlsDestroying", async () => {
-        await engine.destroy();
-    });
-    player.on("hlsError", (_event: string, errorData: { details: string }) => {
+
+    hlsjs.on("hlsError", (_event: string, errorData: { details: string }) => {
         if (errorData.details === "bufferStalledError") {
             const htmlMediaElement = (player.media === undefined
                 ? player.el_ // videojs-contrib-hlsjs
@@ -148,11 +69,13 @@ function initHlsJsEvents(player: any, engine: Engine): void {
             }
         }
     });
-    player.on('seeking', () => {
-        debug("Player seeking.")
 
-        // Abort current HTTP/P2P request so HLS is not stuck with a P2P request when moving current video player time
-        // to a previously loaded fragment
-        engine.abortCurrentRequest();
-    })
+    hlsjs.on("hlsDestroying", async () => {
+        try {
+            await engine.destroy();
+            player.off('seeking', onSeek)
+        } catch (err) {
+            console.error(err)
+        }
+    });
 }
