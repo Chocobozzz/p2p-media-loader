@@ -1,7 +1,7 @@
 {
   "name": "@peertube/p2p-media-loader-hlsjs",
   "description": "P2P Media Loader hls.js integration - PeerTube fork",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "private": false,
   "license": "Apache-2.0",
   "author": "Chocobozzz",
@@ -21,7 +21,7 @@
     "url": "https://github.com/Chocobozzz/p2p-media-loader.git"
   },
   "dependencies": {
-    "@peertube/p2p-media-loader-core": "^1.0.19",
+    "@peertube/p2p-media-loader-core": "^1.0.20",
     "debug": "^4.3.5",
     "esbuild": "^0.21.5",
     "events": "^3.3.0",
