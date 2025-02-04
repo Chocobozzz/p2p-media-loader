@@ -150,9 +150,9 @@ export class HttpRequestExecutor {
           ? parseContentRangeHeader(contentRangeHeader)
           : undefined;
         if (contentRange) {
-          const { from, to, total } = contentRange;
+          const { from, to } = contentRange;
           if (
-            (total !== undefined && this.request.totalBytes !== total) ||
+            (total !== undefined && this.request.totalBytes !== (to - from + 1)) ||
             (from !== undefined && requestByteRange.start !== from) ||
             (to !== undefined &&
               requestByteRange.end !== undefined &&
