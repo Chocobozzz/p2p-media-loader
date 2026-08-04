@@ -33,10 +33,17 @@
     "src"
   ],
   "exports": {
-    ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    ".": {
+      "types": "./lib/index.d.ts",
+      "p2pml:core-as-bundle": "./dist/p2p-media-loader-core.es.js",
+      "import": "./lib/index.js"
+    },
+    "./server": {
+      "types": "./lib/server.d.ts",
+      "import": "./lib/server.js"
+    }
   },
-  "types": "./src/index.ts",
+  "types": "./lib/index.d.ts",
   "publishConfig": {
     "exports": {
       ".": {

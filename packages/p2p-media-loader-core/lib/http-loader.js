@@ -1,0 +1,267 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { RequestError, } from "./types.js";
+import { SafeAbortController, isAbortControllerSupported, } from "./utils/abort-controller.js";
+export class HttpRequestExecutor {
+    isAborted() {
+        return this.abortController.signal.aborted;
+    }
+    constructor(request, httpConfig, eventTarget) {
+        Object.defineProperty(this, "request", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: request
+        });
+        Object.defineProperty(this, "httpConfig", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: httpConfig
+        });
+        Object.defineProperty(this, "abortController", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new SafeAbortController()
+        });
+        Object.defineProperty(this, "expectedBytesLength", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "requestByteRange", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "onChunkDownloaded", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.onChunkDownloaded =
+            eventTarget.getEventDispatcher("onChunkDownloaded");
+        const { byteRange } = this.request.segment;
+        if (byteRange)
+            this.requestByteRange = Object.assign({}, byteRange);
+    }
+    execute() {
+        var _a;
+        const startControls = {
+            onAbort: () => this.abortController.abort(),
+            notReceivingBytesTimeoutMs: this.httpConfig.httpNotReceivingBytesTimeoutMs,
+        };
+        const completed = this.request.tryCompleteByLoadedBytes({ downloadSource: "http" }, startControls, this.httpConfig.validateHTTPSegment, "http-segment-validation-failed");
+        if (completed)
+            return;
+        if (this.request.loadedBytes !== 0) {
+            this.requestByteRange = (_a = this.requestByteRange) !== null && _a !== void 0 ? _a : { start: 0 };
+            this.requestByteRange.start =
+                this.requestByteRange.start + this.request.loadedBytes;
+        }
+        if (this.request.totalBytes) {
+            this.expectedBytesLength =
+                this.request.totalBytes - this.request.loadedBytes;
+        }
+        const requestControls = this.request.start({ downloadSource: "http" }, startControls);
+        void this.fetch(requestControls);
+    }
+    fetch(requestControls) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            const { segment } = this.request;
+            let activeReader;
+            if (this.isAborted()) {
+                return;
+            }
+            const onAbort = () => {
+                try {
+                    activeReader === null || activeReader === void 0 ? void 0 : activeReader.cancel().catch(() => {
+                        // Swallow stream cancel errors
+                    });
+                }
+                catch (_a) {
+                    // Swallow stream cancel errors
+                }
+            };
+            this.abortController.signal.addEventListener("abort", onAbort);
+            const abortSignal = isAbortControllerSupported
+                ? this.abortController.signal
+                : undefined;
+            try {
+                let request = yield ((_b = (_a = this.httpConfig).httpRequestSetup) === null || _b === void 0 ? void 0 : _b.call(_a, segment.url, segment.byteRange, abortSignal, this.requestByteRange));
+                if (this.isAborted()) {
+                    throw new DOMException("Request aborted", "AbortError");
+                }
+                if (!request) {
+                    // Use default empty Headers constructor and set fields individually for compatibility
+                    // with older browsers (e.g. Chrome < 47) that do not support passing an object parameter.
+                    const headers = new Headers();
+                    if (this.requestByteRange) {
+                        headers.set("Range", `bytes=${this.requestByteRange.start}-${(_c = this.requestByteRange.end) !== null && _c !== void 0 ? _c : ""}`);
+                    }
+                    const requestOptions = { headers };
+                    if (abortSignal) {
+                        requestOptions.signal = abortSignal;
+                    }
+                    request = new Request(segment.url, requestOptions);
+                }
+                if (this.isAborted()) {
+                    throw new DOMException("Request aborted before request fetch", "AbortError");
+                }
+                const response = yield window.fetch(request);
+                if (this.isAborted()) {
+                    throw new DOMException("Request aborted", "AbortError");
+                }
+                this.handleResponseHeaders(response);
+                requestControls.firstBytesReceived();
+                if (!response.body || typeof response.body.getReader !== "function") {
+                    // Fallback for older browsers (e.g. Chrome < 43) that do not support ReadableStream
+                    // or response.body.getReader. Reads the entire segment into an ArrayBuffer instead.
+                    const arrayBuffer = yield response.arrayBuffer();
+                    if (this.isAborted()) {
+                        throw new DOMException("Request aborted", "AbortError");
+                    }
+                    const value = new Uint8Array(arrayBuffer);
+                    requestControls.addLoadedChunk(value);
+                    this.onChunkDownloaded(value.byteLength, "http", undefined, segment.stream.type, this.request.infoHash);
+                }
+                else {
+                    const reader = response.body.getReader();
+                    activeReader = reader;
+                    for (;;) {
+                        if (this.isAborted()) {
+                            throw new DOMException("Request aborted", "AbortError");
+                        }
+                        const { done, value } = yield reader.read();
+                        if (done)
+                            break;
+                        if (this.isAborted()) {
+                            throw new DOMException("Request aborted", "AbortError");
+                        }
+                        requestControls.addLoadedChunk(value);
+                        this.onChunkDownloaded(value.byteLength, "http", undefined, segment.stream.type, this.request.infoHash);
+                    }
+                }
+                if (this.isAborted()) {
+                    throw new DOMException("Request aborted", "AbortError");
+                }
+                // If the HTTP connection drops gracefully but prematurely, fetch yields done: true
+                // without throwing an error. We must verify that we received the full segment.
+                // If truncated, we throw without clearing loaded bytes to allow the next
+                // download attempt to resume from the current offset using HTTP Range requests.
+                if (this.request.totalBytes !== undefined &&
+                    this.request.loadedBytes !== this.request.totalBytes) {
+                    throw new RequestError("http-bytes-mismatch", `HTTP response truncated: received ${this.request.loadedBytes} of ${this.request.totalBytes} bytes`);
+                }
+                const isValid = yield this.request.validateData(this.httpConfig.validateHTTPSegment);
+                if (this.isAborted()) {
+                    throw new DOMException("Request aborted", "AbortError");
+                }
+                if (!isValid) {
+                    this.request.clearLoadedBytes();
+                    throw new RequestError("http-segment-validation-failed");
+                }
+                requestControls.completeOnSuccess();
+            }
+            catch (error) {
+                this.handleError(error, requestControls);
+            }
+            finally {
+                this.abortController.signal.removeEventListener("abort", onAbort);
+            }
+        });
+    }
+    handleResponseHeaders(response) {
+        if (!response.ok) {
+            if (response.status === 406 || response.status === 416) {
+                this.request.clearLoadedBytes();
+                throw new RequestError("http-bytes-mismatch", response.statusText);
+            }
+            else {
+                throw new RequestError("http-error", response.statusText);
+            }
+        }
+        const { requestByteRange } = this;
+        if (requestByteRange) {
+            if (response.status === 200) {
+                if (this.request.segment.byteRange) {
+                    throw new RequestError("http-unexpected-status-code");
+                }
+                else {
+                    this.request.clearLoadedBytes();
+                }
+            }
+            else {
+                if (response.status !== 206) {
+                    throw new RequestError("http-unexpected-status-code", response.statusText);
+                }
+                const contentLengthHeader = response.headers.get("Content-Length");
+                if (contentLengthHeader &&
+                    this.expectedBytesLength !== undefined &&
+                    this.expectedBytesLength !== +contentLengthHeader) {
+                    this.request.clearLoadedBytes();
+                    throw new RequestError("http-bytes-mismatch", response.statusText);
+                }
+                const contentRangeHeader = response.headers.get("Content-Range");
+                const contentRange = contentRangeHeader
+                    ? parseContentRangeHeader(contentRangeHeader)
+                    : undefined;
+                if (contentRange) {
+                    const { from, to } = contentRange;
+                    const responseExpectedBytesLength = to !== undefined && from !== undefined ? to - from + 1 : undefined;
+                    if ((responseExpectedBytesLength !== undefined &&
+                        this.expectedBytesLength !== responseExpectedBytesLength) ||
+                        (from !== undefined && requestByteRange.start !== from) ||
+                        (to !== undefined &&
+                            requestByteRange.end !== undefined &&
+                            requestByteRange.end !== to)) {
+                        this.request.clearLoadedBytes();
+                        throw new RequestError("http-bytes-mismatch", response.statusText);
+                    }
+                }
+            }
+        }
+        if (response.status === 200 && this.request.totalBytes === undefined) {
+            const contentLengthHeader = response.headers.get("Content-Length");
+            if (contentLengthHeader)
+                this.request.setTotalBytes(+contentLengthHeader);
+        }
+    }
+    handleError(error, requestControls) {
+        // Abort-initiated errors: the Request already transitioned its own
+        // status via cancel/abortOnTimeout, nothing to do here.
+        if (this.isAborted())
+            return;
+        if (error instanceof Error) {
+            const httpLoaderError = error instanceof RequestError
+                ? error
+                : new RequestError("http-error", error.message);
+            requestControls.failWithError(httpLoaderError);
+        }
+    }
+}
+const rangeHeaderRegex = /^bytes (?:(?:(\d+)|)-(?:(\d+)|)|\*)\/(?:(\d+)|\*)$/;
+function parseContentRangeHeader(headerValue) {
+    const match = rangeHeaderRegex.exec(headerValue.trim());
+    if (!match)
+        return;
+    const [, from, to, total] = match;
+    return {
+        from: from ? parseInt(from) : undefined,
+        to: to ? parseInt(to) : undefined,
+        total: total ? parseInt(total) : undefined,
+    };
+}
+//# sourceMappingURL=http-loader.js.map

@@ -166,24 +166,22 @@ importers:
         version: 19.2.8(react@19.2.8)
 
   packages/p2p-media-loader-hlsjs:
-    dependencies:
-      p2p-media-loader-core:
-        specifier: workspace:*
-        version: link:../p2p-media-loader-core
     devDependencies:
       hls.js:
         specifier: ^1.6.16
         version: 1.6.16
+      p2p-media-loader-core:
+        specifier: workspace:*
+        version: link:../p2p-media-loader-core
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(vite@8.1.5(jiti@2.7.0)(yaml@2.9.0))
 
   packages/p2p-media-loader-shaka:
-    dependencies:
+    devDependencies:
       p2p-media-loader-core:
         specifier: workspace:*
         version: link:../p2p-media-loader-core
-    devDependencies:
       shaka-player:
         specifier: ^5.2.2
         version: 5.2.2

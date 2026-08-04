@@ -31,8 +31,8 @@
     "lib",
     "src"
   ],
-  "exports": "./src/index.ts",
-  "types": "./src/index.ts",
+  "exports": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "publishConfig": {
     "exports": "./lib/index.js",
     "types": "./lib/index.d.ts"
@@ -53,10 +53,11 @@
     "type-check": "npx tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {
-    "p2p-media-loader-core": "workspace:*"
+  "peerDependencies": {
+    "p2p-media-loader-core": "*"
   },
   "devDependencies": {
+    "p2p-media-loader-core": "workspace:*",
     "shaka-player": "^5.2.2",
     "vitest": "^4.1.10"
   }
